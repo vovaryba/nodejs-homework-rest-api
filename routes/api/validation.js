@@ -1,9 +1,15 @@
 const Joi = require("joi");
+Joi.objectId = require("joi-objectid")(Joi);
+const { ValidInfoContact } = require("../../config/constant");
 
 const patternPhone = /^\+[0-9]{2}\(\d{3}\)-\d{3}-\d{2}-\d{2}/;
 
 const schemaContact = Joi.object({
-  name: Joi.string().alphanum().min(1).max(20).required(),
+  name: Joi.string()
+    .alphanum()
+    .min(ValidInfoContact.MIN_NAME)
+    .max(ValidInfoContact.MAX_NAME)
+    .required(),
   email: Joi.string()
     .email({ minDomainSegments: 2, tlds: { allow: ["com", "net"] } })
     .required(),
@@ -15,10 +21,8 @@ const schemaStatusContact = Joi.object({
   isFavorite: Joi.boolean().required(),
 });
 
-const patternID = "\\w{8}-\\w{4}-\\w{4}-\\w{4}-\\w{12}";
-
 const schemaId = Joi.object({
-  contactId: Joi.string().pattern(new RegExp(patternID)).required(),
+  contactId: Joi.objectId().required(),
 });
 
 const validate = async (schema, obj, res, next) => {
