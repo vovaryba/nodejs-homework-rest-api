@@ -1,27 +1,36 @@
-const { Schema, model } = require("mongoose");
-const { ValidInfoContact } = require("../config/constant");
+const { Schema, model, SchemaTypes } = require("mongoose");
+const { ValidInfoContact } = require("../config/constants");
+const mongoosePaginate = require("mongoose-paginate-v2");
 
 const contactSchema = new Schema(
   {
     name: {
-      type: String,
+      type: SchemaTypes.String,
       min: ValidInfoContact.MIN_NAME,
       max: ValidInfoContact.MAX_NAME,
       required: [true, "Set name for contact"],
     },
     email: {
-      type: String,
+      type: SchemaTypes.String,
       unique: true,
       required: [true, "Set email for contact"],
+      validate(value) {
+        const re = /\S+@\S+.\S+/;
+        return re.test(String(value).toLowerCase());
+      },
     },
     phone: {
-      type: String,
+      type: SchemaTypes.String,
       unique: true,
       required: [true, "Set phone for contact"],
     },
     isFavorite: {
-      type: Boolean,
+      type: SchemaTypes.Boolean,
       default: false,
+    },
+    owner: {
+      type: SchemaTypes.ObjectId,
+      ref: "user",
     },
   },
   {
@@ -39,9 +48,11 @@ const contactSchema = new Schema(
 );
 
 contactSchema.path("phone").validate(function (value) {
-  const re = /^\+[0-9]{2}\(\d{3}\)-\d{3}-\d{2}-\d{2}/;
+  const re = /^\+[0-9]{2}\(\d{3}\)-\d{3}-\d{2}-\d{2}$/;
   return re.test(String(value));
 });
+
+contactSchema.plugin(mongoosePaginate);
 
 const Contact = model("contact", contactSchema);
 
