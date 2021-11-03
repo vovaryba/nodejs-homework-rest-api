@@ -1,5 +1,10 @@
 const jwt = require("jsonwebtoken");
+const fs = require("fs/promises");
+// const path = require("path");
+// const mkdirp = require("mkdirp");
 const Users = require("../repository/users");
+// const UploadService = require("../sevices/file-upload");
+const UploadService = require("../sevices/cloud-upload");
 const { HttpCode } = require("../config/constants");
 const { CustomError } = require("../helpers/customError");
 require("dotenv").config();
@@ -24,6 +29,7 @@ const registration = async (req, res, next) => {
         id: newUser.id,
         email: newUser.email,
         subscription: newUser.subscription,
+        avatar: newUser.avatar,
       },
     });
   } catch (error) {
@@ -101,10 +107,53 @@ const updateUserSubscription = async (req, res, next) => {
   throw new CustomError(HttpCode.NOT_FOUND, "Not Found");
 };
 
+// Local storage
+// const uploadAvatar = async (req, res, next) => {
+//   const id = String(req.user._id);
+//   const file = req.file;
+//   const AVATAR_OF_USERS = process.env.AVATAR_OF_USERS;
+//   const destination = path.join(AVATAR_OF_USERS, id);
+//   await mkdirp(destination);
+//   const uploadService = new UploadService(destination);
+//   const avatarUrl = await uploadService.save(file, id);
+//   await Users.updateAvatar(id, avatarUrl);
+
+//   return res.status(HttpCode.OK).json({
+//     status: "success",
+//     code: HttpCode.OK,
+//     data: { avatar: avatarUrl },
+//   });
+// };
+
+// Cloud storage
+const uploadAvatar = async (req, res, next) => {
+  const { id, idUserCloud } = req.user;
+  const file = req.file;
+  const destination = "Avatars";
+  const uploadService = new UploadService(destination);
+  const { avatarUrl, returnIdUserCloud } = await uploadService.save(
+    file.path,
+    idUserCloud
+  );
+  await Users.updateAvatar(id, avatarUrl, returnIdUserCloud);
+  try {
+    await fs.unlink(file.path);
+  } catch (error) {
+    console.log(error.message);
+  }
+
+  return res.status(HttpCode.OK).json({
+    status: "success",
+    code: HttpCode.OK,
+    data: { avatar: avatarUrl },
+  });
+};
+
 module.exports = {
   registration,
   login,
   logout,
   getCurrent,
   updateUserSubscription,
+  uploadAvatar,
 };
