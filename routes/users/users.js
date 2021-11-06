@@ -6,11 +6,13 @@ const {
   logout,
   getCurrent,
   updateUserSubscription,
+  uploadAvatar,
 } = require("../../controllers/users");
 const { validateUser, validateId } = require("./validation");
 const guard = require("../../helpers/guard");
 const wrapError = require("../../helpers/errorHandler");
 const loginLimit = require("../../helpers/rate-limit-login");
+const upload = require("../../helpers/uploads");
 
 router.post("/registration", validateUser, wrapError(registration));
 router.post("/login", validateUser, loginLimit, wrapError(login));
@@ -21,6 +23,12 @@ router.patch(
   guard,
   validateId,
   wrapError(updateUserSubscription)
+);
+router.patch(
+  "/avatar",
+  guard,
+  upload.single("avatar"),
+  wrapError(uploadAvatar)
 );
 
 module.exports = router;
