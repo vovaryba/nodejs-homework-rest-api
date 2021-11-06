@@ -7,6 +7,8 @@ const {
   getCurrent,
   updateUserSubscription,
   uploadAvatar,
+  verifyUser,
+  repeatEmailForVerifyUser,
 } = require("../../controllers/users");
 const { validateUser, validateId } = require("./validation");
 const guard = require("../../helpers/guard");
@@ -30,5 +32,8 @@ router.patch(
   upload.single("avatar"),
   wrapError(uploadAvatar)
 );
+
+router.get("/verify/:token", wrapError(verifyUser));
+router.post("/verify", repeatEmailForVerifyUser);
 
 module.exports = router;
