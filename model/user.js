@@ -1,5 +1,6 @@
 const { Schema, model } = require("mongoose");
 const gravatar = require("gravatar");
+const crypto = require("crypto");
 const bcrypt = require("bcryptjs");
 const { Subscription } = require("../config/constants");
 const SALT_FACTOR = 6;
@@ -37,6 +38,12 @@ const userSchema = new Schema(
     idUserCloud: {
       type: String,
       default: null,
+    },
+    isVerified: { type: Boolean, default: false },
+    verifyToken: {
+      type: String,
+      required: true,
+      default: crypto.randomUUID(),
     },
   },
   {
